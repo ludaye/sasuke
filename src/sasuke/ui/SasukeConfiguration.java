@@ -6,11 +6,13 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.EditorFactory;
 import com.intellij.openapi.fileTypes.FileTypeManager;
 import com.intellij.uiDesigner.core.GridConstraints;
+
 import sasuke.SasukeSettings;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
+
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -76,4 +78,5 @@ public class SasukeConfiguration {
                 GridConstraints.SIZEPOLICY_WANT_GROW, new Dimension(-1, 390), new Dimension(-1, 390), new Dimension(-1, -1), 0, true);
         templatePanel.add(editor.getComponent(), constraints);
     }
+
 }

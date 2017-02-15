@@ -35,7 +35,7 @@
 
     <actions>
         <!-- Add your actions here -->
-        <action id="sasukeGenerate" class="sasuke.action.GenerateAction" text="show generate dialog"
+        <action id="sasukeGenerate" class="sasuke.action.ShowDialogAction" text="show generate dialog"
                 description="show generate dialog">
             <add-to-group group-id="MainToolBar" anchor="after" relative-to-action="HelpTopics"/>
             <keyboard-shortcut keymap="$default" first-keystroke="alt 0"/>

@@ -6,9 +6,9 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import sasuke.Icons;
 import sasuke.ui.GenerateDialog;
 
-public class GenerateAction extends AnAction {
+public class ShowDialogAction extends AnAction {
 
-    public GenerateAction() {
+    public ShowDialogAction() {
         super(Icons.susake);
         setEnabledInModalContext(true);
     }
