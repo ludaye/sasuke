@@ -43,9 +43,9 @@ public class SasukeConfiguration {
 
         templateTable.getColumnModel().getColumn(1).setCellRenderer(new ButtonRenderer());
         templateTable.getColumnModel().getColumn(1).setCellEditor(new ButtonEditor(new JTextField()));
-        firsetColumn.setPreferredWidth(30);
-        firsetColumn.setMaxWidth(30);
-        firsetColumn.setMinWidth(30);
+        firsetColumn.setPreferredWidth(50);
+        firsetColumn.setMaxWidth(50);
+        firsetColumn.setMinWidth(50);
 
 
         addButton.addMouseListener(new MouseAdapter() {
@@ -57,16 +57,16 @@ public class SasukeConfiguration {
             }
         });
 
-        templateTable.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                super.mouseClicked(e);
-                int row = ((JTable) e.getSource()).getSelectedRow();
-                System.out.println(row);
-                System.out.println(((JTable) e.getSource()).getValueAt(row, 0));
-                System.out.println(((JTable) e.getSource()).getValueAt(row, 1));
-            }
-        });
+//        templateTable.addMouseListener(new MouseAdapter() {
+//            @Override
+//            public void mouseClicked(MouseEvent e) {
+//                super.mouseClicked(e);
+//                int row = ((JTable) e.getSource()).getSelectedRow();
+//                System.out.println(row);
+//                System.out.println(((JTable) e.getSource()).getValueAt(row, 0));
+//                System.out.println(((JTable) e.getSource()).getValueAt(row, 1));
+//            }
+//        });
     }
 
     public JPanel getMainPanel() {
