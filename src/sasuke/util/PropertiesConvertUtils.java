@@ -1,4 +1,4 @@
-package sasuke;
+package sasuke.util;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
