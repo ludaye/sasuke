@@ -13,6 +13,7 @@ public class PropertiesConvertUtils {
         Properties result = new Properties();
         InputStream inputStream = new ByteArrayInputStream(string.getBytes());
         result.load(inputStream);
+        inputStream.close();
         return result;
     }
 }

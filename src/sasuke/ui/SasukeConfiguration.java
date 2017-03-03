@@ -1,5 +1,6 @@
 package sasuke.ui;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.EditorFactory;
@@ -9,10 +10,9 @@ import sasuke.SasukeSettings;
 import sasuke.Template;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -34,27 +34,12 @@ public class SasukeConfiguration {
 
 
     public SasukeConfiguration(SasukeSettings sasukeSettings) {
-        if (sasukeSettings.getTemplates() != null) {
-            temp.addAll(sasukeSettings.getTemplates());
-        }
-        if (sasukeSettings.getJdbc() != null) {
-            tempJdbc = sasukeSettings.getJdbc();
-        }
+        if (sasukeSettings.getTemplates() != null) temp.addAll(sasukeSettings.getTemplates());
+        if (sasukeSettings.getJdbc() != null) tempJdbc = sasukeSettings.getJdbc();
         initJdbcEditor();
         initTable();
         initTemplateEditor();
         initButtonEvent();
-
-//        templateTable.addMouseListener(new MouseAdapter() {
-//            @Override
-//            public void mouseClicked(MouseEvent e) {
-//                super.mouseClicked(e);
-//                int row = ((JTable) e.getSource()).getSelectedRow();
-//                System.out.println(row);
-//                System.out.println(((JTable) e.getSource()).getValueAt(row, 0));
-//                System.out.println(((JTable) e.getSource()).getValueAt(row, 1));
-//            }
-//        });
     }
 
     public JPanel getMainPanel() {
@@ -63,23 +48,37 @@ public class SasukeConfiguration {
 
     public void initTable() {
         model.addColumn("enabled");
-        model.addColumn("templateName");
+        model.addColumn("name");
+        model.addColumn("extension");
+        model.addColumn("suffix");
         templateTable.setModel(model);
-        TableColumn firsetColumn = templateTable.getColumnModel().getColumn(0);
-        firsetColumn.setCellEditor(templateTable.getDefaultEditor(Boolean.class));
-        firsetColumn.setCellRenderer(templateTable.getDefaultRenderer(Boolean.class));
-        firsetColumn.setPreferredWidth(50);
+        TableColumnModel columnModel = templateTable.getColumnModel();
+        TableColumn column_1 = columnModel.getColumn(0);
+        column_1.setCellEditor(templateTable.getDefaultEditor(Boolean.class));
+        column_1.setCellRenderer(templateTable.getDefaultRenderer(Boolean.class));
+        column_1.setMinWidth(50);
+        column_1.setPreferredWidth(50);
+        column_1.setMaxWidth(50);
+
+        TableColumn column_2 = columnModel.getColumn(1);
+        column_2.setMinWidth(140);
+        column_2.setPreferredWidth(140);
+        column_2.setMaxWidth(140);
+
+        TableColumn column_3 = columnModel.getColumn(2);
+        column_3.setMinWidth(60);
+        column_3.setPreferredWidth(60);
+        column_3.setMaxWidth(60);
 
         ListSelectionModel selectionModel = templateTable.getSelectionModel();
         selectionModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         selectionModel.addListSelectionListener(e -> {
             if (e.getValueIsAdjusting()) {
-                System.out.println(templateTable.getSelectedRow());
             }
         });
 
         for (Template template : temp) {
-            model.addRow(new Object[]{template.isEnabled(), template.getTemplateName()});
+            model.addRow(new Object[]{template.getEnabled(), template.getName()});
         }
     }
 
@@ -110,7 +109,10 @@ public class SasukeConfiguration {
             @Override
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
-                model.addRow(new Object[]{true, "undefined"});
+                model.addRow(new Object[]{true, "undefined", "java", "Entity"});
+                temp.add(new Template());
+                int rowCount = templateTable.getRowCount() - 1;
+                templateTable.setRowSelectionInterval(rowCount, rowCount);
             }
         });
 
@@ -118,7 +120,11 @@ public class SasukeConfiguration {
             @Override
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
-                System.out.println(templateTable.getSelectedRow());
+                int selectedRow = templateTable.getSelectedRow();
+                if (selectedRow > -1) {
+                    model.removeRow(selectedRow);
+                    temp.remove(selectedRow);
+                }
             }
         });
     }
@@ -138,4 +144,5 @@ public class SasukeConfiguration {
     public void setTempJdbc(String tempJdbc) {
         this.tempJdbc = tempJdbc;
     }
+
 }
