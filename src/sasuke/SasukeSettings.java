@@ -11,8 +11,8 @@ import java.util.List;
 @State(name = "sasukeSettings", storages = {@Storage(id = "sasuke", file = "$APP_CONFIG$/sasuke-settings.xml")})
 public class SasukeSettings implements PersistentStateComponent<SasukeSettings> {
 
-    private String jdbc;
-    private List<Template> templates;
+    private String jdbc = Constant.DEFAULT_JDBC;
+    private List<Template> templates = Constant.TEMPLATE_LIST;
 
     @Nullable
     @Override

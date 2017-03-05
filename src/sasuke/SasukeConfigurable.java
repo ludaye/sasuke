@@ -43,13 +43,27 @@ public class SasukeConfigurable implements Configurable {
 
     @Override
     public boolean isModified() {
-
+        if (sasukeSettings.getJdbc() == null || sasukeSettings.getTemplates() == null) {
+            return true;
+        }
+        if (!sasukeSettings.getJdbc().equals(sasukeConfiguration.getJdbc())) {
+            return true;
+        }
+        if (sasukeSettings.getTemplates().size() != sasukeConfiguration.getTemplates().size()) {
+            return true;
+        }
+        for (int i = 0, len = sasukeSettings.getTemplates().size(); i < len; i++) {
+            if (!sasukeSettings.getTemplates().get(i).equals(sasukeConfiguration.getTemplates().get(i))) {
+                return true;
+            }
+        }
         return false;
     }
 
     @Override
     public void apply() throws ConfigurationException {
-
+        sasukeSettings.setJdbc(sasukeConfiguration.getJdbc());
+        sasukeSettings.setTemplates(sasukeConfiguration.getTemplates());
     }
 
     @Override

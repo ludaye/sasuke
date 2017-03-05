@@ -1,6 +1,5 @@
 package sasuke.ui;
 
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.EditorFactory;
@@ -28,30 +27,56 @@ public class SasukeConfiguration {
     private JPanel templatePanel;
     private DefaultTableModel model = new DefaultTableModel();
     private Editor jdbcEditor;
-    private Editor templateEditor;
-    private List<Template> temp = new ArrayList<>();
-    private String tempJdbc = "";
+    private List<Editor> templateEditorList = new ArrayList<>();
+    private GridConstraints templateConstraints;
+    private EditorFactory factory = EditorFactory.getInstance();
+    private FileTypeManager fileTypeManager = FileTypeManager.getInstance();
 
 
     public SasukeConfiguration(SasukeSettings sasukeSettings) {
-        if (sasukeSettings.getTemplates() != null) temp.addAll(sasukeSettings.getTemplates());
-        if (sasukeSettings.getJdbc() != null) tempJdbc = sasukeSettings.getJdbc();
-        initJdbcEditor();
         initTable();
-        initTemplateEditor();
+        /**
+         * jdbc编辑器
+         */
+        String jdbcStr = sasukeSettings.getJdbc() == null ? "" : sasukeSettings.getJdbc();
+        Document jdbc = factory.createDocument(jdbcStr);
+        jdbcEditor = factory.createEditor(jdbc, null, fileTypeManager.getFileTypeByExtension("properties"), false);
+        GridConstraints jdbcConstraintsc = new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST,
+                GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW,
+                GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(-1, 130), null, 0, true);
+        jdbcPanel.add(jdbcEditor.getComponent(), jdbcConstraintsc);
+        /**
+         * 模板
+         */
+        templateConstraints = new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_BOTH,
+                GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_WANT_GROW, new Dimension(-1, 300),
+                new Dimension(-1, 300), new Dimension(-1, -1), 0, true);
+        if (sasukeSettings.getTemplates() != null) {
+            sasukeSettings.getTemplates().forEach(e -> {
+                String templateStr = e.getContent() == null ? "" : e.getContent();
+                addEditor(templateStr);
+                model.addRow(new Object[]{e.getEnabled(), e.getName(), e.getExtension(), e.getSuffix()});
+            });
+        }
         initButtonEvent();
+
+        if (templateTable.getRowCount() > 0) {
+            setSelected(0);
+        }
     }
 
     public JPanel getMainPanel() {
         return mainPanel;
     }
 
-    public void initTable() {
+    private void initTable() {
         model.addColumn("enabled");
         model.addColumn("name");
         model.addColumn("extension");
         model.addColumn("suffix");
         templateTable.setModel(model);
+        templateTable.getTableHeader().setReorderingAllowed(false);
+        templateTable.setRowHeight(20);
         TableColumnModel columnModel = templateTable.getColumnModel();
         TableColumn column_1 = columnModel.getColumn(0);
         column_1.setCellEditor(templateTable.getDefaultEditor(Boolean.class));
@@ -74,45 +99,27 @@ public class SasukeConfiguration {
         selectionModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         selectionModel.addListSelectionListener(e -> {
             if (e.getValueIsAdjusting()) {
+                int selectedRow = templateTable.getSelectedRow();
+                if (selectedRow > -1) {
+                    for (int i = 0, len = templateEditorList.size(); i < len; i++) {
+                        templateEditorList.get(i).getComponent().setVisible(i == selectedRow);
+                    }
+                }
             }
         });
-
-        for (Template template : temp) {
-            model.addRow(new Object[]{template.getEnabled(), template.getName()});
-        }
     }
 
-    public void initJdbcEditor() {
-        EditorFactory factory = EditorFactory.getInstance();
-        Document jdbc = factory.createDocument(tempJdbc);
-        jdbcEditor = factory.createEditor(jdbc, null, FileTypeManager.getInstance()
-                .getFileTypeByExtension("properties"), false);
-        GridConstraints constraints = new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST,
-                GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW,
-                GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(-1, 130), null, 0, true);
-        jdbcPanel.add(jdbcEditor.getComponent(), constraints);
-    }
-
-    public void initTemplateEditor() {
-        EditorFactory factory = EditorFactory.getInstance();
-        Document template = factory.createDocument("");
-        templateEditor = factory.createEditor(template, null, FileTypeManager.getInstance()
-                .getFileTypeByExtension("ftl"), false);
-        GridConstraints constraints = new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST,
-                GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_WANT_GROW,
-                GridConstraints.SIZEPOLICY_WANT_GROW, new Dimension(-1, 300), new Dimension(-1, 300), new Dimension(-1, -1), 0, true);
-        templatePanel.add(templateEditor.getComponent(), constraints);
-    }
-
-    public void initButtonEvent() {
+    private void initButtonEvent() {
         addButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
                 model.addRow(new Object[]{true, "undefined", "java", "Entity"});
-                temp.add(new Template());
-                int rowCount = templateTable.getRowCount() - 1;
-                templateTable.setRowSelectionInterval(rowCount, rowCount);
+                addEditor("");
+                int rowIndex = templateTable.getRowCount() - 1;
+                if (rowIndex > -1) {
+                    setSelected(rowIndex);
+                }
             }
         });
 
@@ -123,26 +130,53 @@ public class SasukeConfiguration {
                 int selectedRow = templateTable.getSelectedRow();
                 if (selectedRow > -1) {
                     model.removeRow(selectedRow);
-                    temp.remove(selectedRow);
+                    templateEditorList.get(selectedRow).getComponent().setVisible(false);
+                    templateEditorList.remove(selectedRow);
+                    if (templateEditorList.size() > 0) {
+                        setSelected(0);
+                    }
                 }
             }
         });
     }
 
-    public List<Template> getTemp() {
-        return temp;
+    /**
+     * 选择某个模板
+     *
+     * @param row 行数
+     */
+    private void setSelected(int row) {
+        templateTable.setRowSelectionInterval(row, row);
+        for (int i = 0, len = templateEditorList.size(); i < len; i++) {
+            templateEditorList.get(i).getComponent().setVisible(i == row);
+        }
     }
 
-    public void setTemp(List<Template> temp) {
-        this.temp = temp;
+    /**
+     * 新增一个模板编辑器
+     */
+    private void addEditor(String templateStr) {
+        Document template = factory.createDocument(templateStr);
+        Editor templateEditor = factory.createEditor(template, null, fileTypeManager.getFileTypeByExtension("ftl"), false);
+        templatePanel.add(templateEditor.getComponent(), templateConstraints);
+        templateEditor.getComponent().setVisible(false);
+        templateEditorList.add(templateEditor);
     }
 
-    public String getTempJdbc() {
-        return tempJdbc;
+    public String getJdbc() {
+        return jdbcEditor.getDocument().getText();
     }
 
-    public void setTempJdbc(String tempJdbc) {
-        this.tempJdbc = tempJdbc;
+    public List<Template> getTemplates() {
+        List<Template> templateList = new ArrayList<>();
+        for (int i = 0, len = templateTable.getRowCount(); i < len; i++) {
+            String content = templateEditorList.get(i).getDocument().getText();
+            Boolean enable = (Boolean) templateTable.getValueAt(i, 0);
+            String name = (String) templateTable.getValueAt(i, 1);
+            String suffix = (String) templateTable.getValueAt(i, 2);
+            String extension = (String) templateTable.getValueAt(i, 3);
+            templateList.add(new Template(enable, name, content, suffix, extension));
+        }
+        return templateList;
     }
-
 }

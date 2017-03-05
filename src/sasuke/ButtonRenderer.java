@@ -6,18 +6,13 @@ import java.awt.*;
 
 public class ButtonRenderer extends JButton implements TableCellRenderer {
     public ButtonRenderer() {
-        setOpaque(true);
+        setOpaque(false);
+        setIcon(Icons.MENU_OPEN);
+        setBorder(null);
     }
 
     public Component getTableCellRendererComponent(JTable table, Object value,
                                                    boolean isSelected, boolean hasFocus, int row, int column) {
-        if (!isSelected) {
-            setForeground(table.getForeground());
-            setBackground(table.getBackground());
-        } else {
-            setForeground(table.getSelectionForeground());
-            setBackground(table.getSelectionBackground());
-        }
         return this;
     }
 }

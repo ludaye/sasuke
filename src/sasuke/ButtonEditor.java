@@ -2,31 +2,23 @@ package sasuke;
 
 
 import javax.swing.*;
+import javax.swing.table.TableCellEditor;
 import java.awt.*;
 import java.awt.event.ActionListener;
 
-public class ButtonEditor extends DefaultCellEditor {
+public class ButtonEditor extends AbstractCellEditor implements TableCellEditor {
 
     private JButton button;
     private ActionListener actionListener;
 
-
-    public ButtonEditor(JTextField checkBox) {
-        super(checkBox);
-        this.setClickCountToStart(1);
-        button = new JButton();
-        button.setOpaque(true);
+    public ButtonEditor() {
+        button = new JButton(Icons.MENU_OPEN);
+        button.setOpaque(false);
+        button.setBorder(null);
     }
 
     public Component getTableCellEditorComponent(final JTable table, Object value,
                                                  boolean isSelected, int row, int column) {
-        if (isSelected) {
-            button.setForeground(table.getSelectionForeground());
-            button.setBackground(table.getSelectionBackground());
-        } else {
-            button.setForeground(table.getForeground());
-            button.setBackground(table.getBackground());
-        }
         if (actionListener == null) {
             actionListener = e -> {
                 fireEditingStopped();
@@ -37,5 +29,10 @@ public class ButtonEditor extends DefaultCellEditor {
         button.removeActionListener(actionListener);
         button.addActionListener(actionListener);
         return button;
+    }
+
+    @Override
+    public Object getCellEditorValue() {
+        return null;
     }
 }
