@@ -2,7 +2,9 @@ package sasuke.ui;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
+
 import org.jetbrains.annotations.Nullable;
+
 import sasuke.ButtonEditor;
 import sasuke.ButtonRenderer;
 import sasuke.SasukeSettings;
@@ -30,13 +32,14 @@ public class GenerateDialog extends DialogWrapper {
             return !(column == 1 || column == 2 || column == 3 || column == 4);
         }
     };
+    private Project project;
 
     public GenerateDialog(@Nullable Project project, SasukeSettings sasukeSettings) {
         super(project);
+        this.project = project;
         getPeer().setContentPane(createCenterPanel());
         initTemplateTable(sasukeSettings);
 
-        show();
     }
 
 
@@ -89,7 +92,7 @@ public class GenerateDialog extends DialogWrapper {
         column_5.setPreferredWidth(25);
         column_5.setMaxWidth(25);
         column_5.setCellRenderer(new ButtonRenderer());
-        column_5.setCellEditor(new ButtonEditor());
+        column_5.setCellEditor(new ButtonEditor(project));
 
         templateTableModel.addRow(new Object[]{true, "test", "test", "test", "", ""});
         templateTableModel.addRow(new Object[]{true, "test", "test", "test", "", ""});
