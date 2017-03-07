@@ -9,11 +9,15 @@ import java.util.Properties;
  * Created by Administrator on 2017/2/14.
  */
 public class PropertiesConvertUtils {
-    public static Properties stringToProperties(String string) throws IOException {
+    public static Properties stringToProperties(String string) {
         Properties result = new Properties();
-        InputStream inputStream = new ByteArrayInputStream(string.getBytes());
-        result.load(inputStream);
-        inputStream.close();
+        try {
+            InputStream inputStream = new ByteArrayInputStream(string.getBytes());
+            result.load(inputStream);
+            inputStream.close();
+        } catch (IOException e) {
+            throw new RuntimeException("解析报错");
+        }
         return result;
     }
 }

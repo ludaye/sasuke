@@ -5,8 +5,14 @@ import com.intellij.openapi.ui.DialogWrapper;
 
 import org.jetbrains.annotations.Nullable;
 
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.sql.SQLException;
+import java.util.List;
+
 import sasuke.ButtonEditor;
 import sasuke.ButtonRenderer;
+import sasuke.MysqlLink;
 import sasuke.SasukeSettings;
 
 import javax.swing.*;
@@ -34,12 +40,26 @@ public class GenerateDialog extends DialogWrapper {
     };
     private Project project;
 
-    public GenerateDialog(@Nullable Project project, SasukeSettings sasukeSettings) {
+    public GenerateDialog(@Nullable Project project, SasukeSettings sasukeSettings, MysqlLink mysqlLink) throws SQLException {
         super(project);
         this.project = project;
         getPeer().setContentPane(createCenterPanel());
         initTemplateTable(sasukeSettings);
 
+        schemaSelect.addItem(" ");
+        List<String> schemas = mysqlLink.findSchemas();
+        if (schemas != null && schemas.size() > 0) {
+            schemas.forEach(schemaSelect::addItem);
+        }
+
+        schemaSelect.addItemListener(e -> {
+                    int stateChange = e.getStateChange();
+                    if (stateChange == ItemEvent.SELECTED) {
+                        String string = schemaSelect.getSelectedItem().toString();
+
+                    }
+                }
+        );
     }
 
 

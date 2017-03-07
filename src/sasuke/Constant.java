@@ -14,8 +14,6 @@ public class Constant {
 
     public static final Map<String, String> MAP = new HashMap<>();
 
-    Long s;
-
     static {
         initList();
         initMap();
