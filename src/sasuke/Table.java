@@ -4,6 +4,8 @@ import java.util.List;
 
 public class Table {
     private String name;
+    private String camelName;
+    private String remark;
     private List<Column> columns;
 
     public Table() {
@@ -21,6 +23,22 @@ public class Table {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getCamelName() {
+        return camelName;
+    }
+
+    public void setCamelName(String camelName) {
+        this.camelName = camelName;
+    }
+
+    public String getRemark() {
+        return remark;
+    }
+
+    public void setRemark(String remark) {
+        this.remark = remark;
     }
 
     public List<Column> getColumns() {

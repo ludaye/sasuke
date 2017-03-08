@@ -1,5 +1,7 @@
 package sasuke.ui;
 
+import com.google.common.base.CaseFormat;
+
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 
@@ -7,6 +9,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -28,7 +32,12 @@ public class GenerateDialog extends DialogWrapper {
     private JTable table;
     private JButton OKButton;
     private SasukeSettings sasukeSettings;
-    private DefaultTableModel tableModel = new DefaultTableModel();
+    private DefaultTableModel tableModel = new DefaultTableModel() {
+        @Override
+        public boolean isCellEditable(int row, int column) {
+            return !(column == 1);
+        }
+    };
     private DefaultTableModel templateTableModel = new DefaultTableModel() {
         /**
          *1,2,3,4列不可以编辑
@@ -45,6 +54,7 @@ public class GenerateDialog extends DialogWrapper {
         this.project = project;
         getPeer().setContentPane(createCenterPanel());
         initTemplateTable(sasukeSettings);
+        initTable();
 
         schemaSelect.addItem(" ");
         List<String> schemas = mysqlLink.findSchemas();
@@ -56,10 +66,27 @@ public class GenerateDialog extends DialogWrapper {
                     int stateChange = e.getStateChange();
                     if (stateChange == ItemEvent.SELECTED) {
                         String string = schemaSelect.getSelectedItem().toString();
+                        try {
+                            tableModel.setRowCount(0);
+                            List<String> strings = mysqlLink.findTables(string);
+                            if (strings != null && strings.size() > 0) {
+                                strings.forEach(s -> tableModel.addRow(new Object[]{false, s,
+                                        CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, s)}));
 
+                            }
+                        } catch (SQLException e1) {
+                            throw new RuntimeException("查询表名失败", e1);
+                        }
                     }
                 }
         );
+
+        OKButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+            }
+        });
     }
 
 
@@ -121,5 +148,24 @@ public class GenerateDialog extends DialogWrapper {
         templateTableModel.addRow(new Object[]{true, "test", "test", "test", "", ""});
         templateTableModel.addRow(new Object[]{true, "test", "test", "test", "", ""});
         templateTableModel.addRow(new Object[]{true, "test", "test", "test", "", ""});
+    }
+
+    private void initTable() {
+        tableModel.addColumn("enabled");
+        tableModel.addColumn("tableName");
+        tableModel.addColumn("entityName");
+        table.setModel(tableModel);
+        table.getTableHeader().setReorderingAllowed(false);
+        table.setRowHeight(25);
+        table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+        TableColumnModel columnModel = table.getColumnModel();
+        TableColumn column_1 = columnModel.getColumn(0);
+        column_1.setCellEditor(table.getDefaultEditor(Boolean.class));
+        column_1.setCellRenderer(table.getDefaultRenderer(Boolean.class));
+        column_1.setMinWidth(50);
+        column_1.setPreferredWidth(50);
+        column_1.setMaxWidth(50);
+
     }
 }
