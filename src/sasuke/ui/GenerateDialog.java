@@ -1,28 +1,21 @@
 package sasuke.ui;
 
-import com.google.common.base.CaseFormat;
-
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
-
 import org.jetbrains.annotations.Nullable;
-
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.sql.SQLException;
-import java.util.List;
-
-import sasuke.ButtonEditor;
-import sasuke.ButtonRenderer;
-import sasuke.MysqlLink;
-import sasuke.SasukeSettings;
+import sasuke.*;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
+import java.awt.event.ItemEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class GenerateDialog extends DialogWrapper {
 
@@ -48,10 +41,13 @@ public class GenerateDialog extends DialogWrapper {
         }
     };
     private Project project;
+    private Map<String, Template> tempalteMap = new HashMap<>();
+    private Map<String, Table> tableMap = new HashMap<>();
 
     public GenerateDialog(@Nullable Project project, SasukeSettings sasukeSettings, MysqlLink mysqlLink) throws SQLException {
         super(project);
         this.project = project;
+        this.sasukeSettings = sasukeSettings;
         getPeer().setContentPane(createCenterPanel());
         initTemplateTable(sasukeSettings);
         initTable();
@@ -66,16 +62,18 @@ public class GenerateDialog extends DialogWrapper {
                     int stateChange = e.getStateChange();
                     if (stateChange == ItemEvent.SELECTED) {
                         String string = schemaSelect.getSelectedItem().toString();
+                        tableModel.setRowCount(0);
+                        if (string.trim().equals("")) {
+                            return;
+                        }
                         try {
-                            tableModel.setRowCount(0);
-                            List<String> strings = mysqlLink.findTables(string);
-                            if (strings != null && strings.size() > 0) {
-                                strings.forEach(s -> tableModel.addRow(new Object[]{false, s,
-                                        CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, s)}));
-
+                            Map<String, Table> tables = mysqlLink.findTables(string);
+                            if (tables != null) {
+                                tableMap = tables;
+                                tables.forEach((s, t) -> tableModel.addRow(new Object[]{false, t.getName(), t.getUpCamelName()}));
                             }
                         } catch (SQLException e1) {
-                            throw new RuntimeException("查询表名失败", e1);
+                            throw new RuntimeException("查询表名失败 " + e1.getMessage(), e1);
                         }
                     }
                 }
@@ -141,13 +139,14 @@ public class GenerateDialog extends DialogWrapper {
         column_5.setCellRenderer(new ButtonRenderer());
         column_5.setCellEditor(new ButtonEditor(project));
 
-        templateTableModel.addRow(new Object[]{true, "test", "test", "test", "", ""});
-        templateTableModel.addRow(new Object[]{true, "test", "test", "test", "", ""});
-        templateTableModel.addRow(new Object[]{true, "test", "test", "test", "", ""});
-        templateTableModel.addRow(new Object[]{true, "test", "test", "test", "", ""});
-        templateTableModel.addRow(new Object[]{true, "test", "test", "test", "", ""});
-        templateTableModel.addRow(new Object[]{true, "test", "test", "test", "", ""});
-        templateTableModel.addRow(new Object[]{true, "test", "test", "test", "", ""});
+        List<Template> templates = sasukeSettings.getTemplates();
+        if (templates != null && templates.size() > 0) {
+            templates.stream().filter(Template::getEnabled).forEach(t -> {
+                        templateTableModel.addRow(new Object[]{true, t.getName(), t.getExtension(), t.getSuffix(), ""});
+                        tempalteMap.put(t.getName(), t);
+                    }
+            );
+        }
     }
 
     private void initTable() {

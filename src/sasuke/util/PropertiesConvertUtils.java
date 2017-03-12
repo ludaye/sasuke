@@ -16,7 +16,7 @@ public class PropertiesConvertUtils {
             result.load(inputStream);
             inputStream.close();
         } catch (IOException e) {
-            throw new RuntimeException("解析报错");
+            throw new RuntimeException("解析报错 " + e.getMessage(), e);
         }
         return result;
     }

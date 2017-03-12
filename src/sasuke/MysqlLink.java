@@ -1,12 +1,12 @@
 package sasuke;
 
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import com.google.common.base.CaseFormat;
+
+import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MysqlLink implements AutoCloseable {
     private Connection con;
@@ -28,25 +28,33 @@ public class MysqlLink implements AutoCloseable {
         return list;
     }
 
-    public List<String> findTables(String schema) throws SQLException {
-        List<String> list = new ArrayList<>();
+    public Map<String, Table> findTables(String schema) throws SQLException {
+        Map<String, Table> map = new HashMap<>();
         ResultSet rs = dmd.getTables(schema, null, "%", new String[]{"TABLE"});
         while (rs.next()) {
-            list.add(rs.getString("TABLE_NAME"));
+            String tableName = rs.getString("TABLE_NAME");
+            String remarks = rs.getString("REMARKS");
+            Table table = new Table(tableName, CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, tableName),
+                    remarks, null);
+            map.put(tableName, table);
         }
         rs.close();
-        return list;
+        return map;
     }
 
-    public Table getTable(String schema, String table) throws SQLException {
+    public Table getTable(String schema, Table table) throws SQLException {
         List<Column> columns = new ArrayList<>();
-        ResultSet rs = dmd.getColumns(schema, null, table, null);
+        ResultSet rs = dmd.getColumns(schema, null, table.getName(), null);
         while (rs.next()) {
-            Column column = new Column(rs.getString("COLUMN_NAME"), rs.getString("TYPE_NAME"), rs.getString("REMARKS"));
+            String columnName = rs.getString("COLUMN_NAME");
+            String low = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, columnName);
+            String up = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, columnName);
+            Column column = new Column(columnName, low, up, rs.getString("TYPE_NAME"), rs.getString("REMARKS"));
             columns.add(column);
         }
+        table.setColumns(columns);
         rs.close();
-        return new Table(table, columns);
+        return table;
     }
 
 
