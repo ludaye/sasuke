@@ -8,7 +8,7 @@ import sasuke.Icons;
 import sasuke.MysqlLink;
 import sasuke.SasukeSettings;
 import sasuke.ui.GenerateDialog;
-import sasuke.util.PropertiesConvertUtils;
+import sasuke.util.SasukeUtils;
 
 import java.sql.SQLException;
 import java.util.Properties;
@@ -23,7 +23,7 @@ public class ShowDialogAction extends AnAction {
     @Override
     public void actionPerformed(AnActionEvent e) {
         SasukeSettings settings = ServiceManager.getService(SasukeSettings.class);
-        Properties properties = PropertiesConvertUtils.stringToProperties(settings.getJdbc());
+        Properties properties = SasukeUtils.stringToProperties(settings.getJdbc());
         try (MysqlLink mysqlLink = new MysqlLink(properties.getProperty("url"), properties.getProperty("user"),
                 properties.getProperty("password"))) {
             GenerateDialog generateDialog = new GenerateDialog(e.getProject(), settings, mysqlLink);
