@@ -1,5 +1,7 @@
 package sasuke;
 
+import com.google.common.base.Objects;
+
 import java.util.List;
 
 public class Table {
@@ -49,5 +51,10 @@ public class Table {
 
     public void setUpCamelName(String upCamelName) {
         this.upCamelName = upCamelName;
+    }
+
+    @Override
+    public String toString() {
+        return Objects.toStringHelper(this).add("name", name).add("upCamelName", upCamelName).add("remark", remark).add("columns", columns).toString();
     }
 }

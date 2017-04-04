@@ -3,15 +3,13 @@ package sasuke.action;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataContext;
-import com.intellij.openapi.components.ServiceManager;
 import sasuke.Icons;
 import sasuke.MysqlLink;
-import sasuke.SasukeSettings;
 import sasuke.ui.GenerateDialog;
-import sasuke.util.SasukeUtils;
 
 import java.sql.SQLException;
-import java.util.Properties;
+
+import static sasuke.util.SasukeUtils.PROPERTIES;
 
 public class ShowDialogAction extends AnAction {
 
@@ -22,11 +20,9 @@ public class ShowDialogAction extends AnAction {
 
     @Override
     public void actionPerformed(AnActionEvent e) {
-        SasukeSettings settings = ServiceManager.getService(SasukeSettings.class);
-        Properties properties = SasukeUtils.stringToProperties(settings.getJdbc());
-        try (MysqlLink mysqlLink = new MysqlLink(properties.getProperty("url"), properties.getProperty("user"),
-                properties.getProperty("password"))) {
-            GenerateDialog generateDialog = new GenerateDialog(e.getProject(), settings, mysqlLink);
+        try (MysqlLink mysqlLink = new MysqlLink(PROPERTIES.getProperty("url"), PROPERTIES.getProperty("user"),
+                PROPERTIES.getProperty("password"))) {
+            GenerateDialog generateDialog = new GenerateDialog(e.getProject(), mysqlLink);
             generateDialog.show();
         } catch (SQLException | ClassNotFoundException e1) {
             throw new RuntimeException("链接失败 " + e1.getMessage(), e1);

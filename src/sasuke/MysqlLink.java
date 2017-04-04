@@ -3,10 +3,7 @@ package sasuke;
 import com.google.common.base.CaseFormat;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class MysqlLink implements AutoCloseable {
     private Connection con;
@@ -14,7 +11,12 @@ public class MysqlLink implements AutoCloseable {
 
     public MysqlLink(String url, String user, String password) throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.jdbc.Driver");
-        con = DriverManager.getConnection(url, user, password);
+        Properties props = new Properties();
+        props.setProperty("user", user);
+        props.setProperty("password", password);
+        props.setProperty("remarks", "true");
+        props.setProperty("useInformationSchema", "true");
+        con = DriverManager.getConnection(url, props);
         dmd = con.getMetaData();
     }
 
@@ -30,7 +32,7 @@ public class MysqlLink implements AutoCloseable {
 
     public Map<String, Table> findTables(String schema) throws SQLException {
         Map<String, Table> map = new HashMap<>();
-        ResultSet rs = dmd.getTables(schema, null, "%", new String[]{"TABLE"});
+        ResultSet rs = dmd.getTables(schema, "%", "%", new String[]{"TABLE"});
         while (rs.next()) {
             String tableName = rs.getString("TABLE_NAME");
             String remarks = rs.getString("REMARKS");

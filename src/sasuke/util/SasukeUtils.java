@@ -1,9 +1,11 @@
 package sasuke.util;
 
+import com.intellij.openapi.components.ServiceManager;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+import sasuke.SasukeSettings;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -17,6 +19,10 @@ import java.util.List;
 import java.util.Properties;
 
 public class SasukeUtils {
+
+    public static final Properties PROPERTIES = stringToProperties(ServiceManager.getService(
+            SasukeSettings.class).getJdbc());
+
     public static Properties stringToProperties(String string) {
         Properties result = new Properties();
         try {
