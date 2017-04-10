@@ -11,7 +11,6 @@ public class Constant {
             "password=123456\n";
     public static final List<Template> TEMPLATE_LIST = new ArrayList<>();
     public static final Map<String, String> MAP = new HashMap<>();
-    public static final String MODULE_DIR = "$MODULE_DIR$";
 
     static {
         initList();

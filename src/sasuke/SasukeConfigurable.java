@@ -9,9 +9,6 @@ import sasuke.ui.SasukeConfiguration;
 
 import javax.swing.*;
 
-/**
- * Created by Administrator on 2017/2/11.
- */
 public class SasukeConfigurable implements Configurable {
     private SasukeConfiguration sasukeConfiguration;
     private SasukeSettings sasukeSettings;
