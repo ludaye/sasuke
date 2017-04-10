@@ -1,5 +1,7 @@
 package sasuke;
 
+import com.google.common.base.Objects;
+
 /**
  * Created by Administrator on 2017/2/14.
  */
@@ -81,11 +83,9 @@ public class Template {
     }
 
     private boolean isEquals(Template template) {
-        return ((this.enabled == null && template.enabled == null) || (this.enabled != null && template.enabled != null && this.enabled.equals(template.enabled))) &&
-                ((this.name == null && template.name == null) || (this.name != null && template.name != null && this.name.equals(template.name))) &&
-                ((this.content == null && template.content == null) || (this.content != null && template.content != null && this.content.equals(template.content))) &&
-                ((this.suffix == null && template.suffix == null) || (this.suffix != null && template.suffix != null && this.suffix.equals(template.suffix))) &&
-                ((this.extension == null && template.extension == null) || (this.extension != null && template.extension != null && this.extension.equals(template.extension)));
+        return Objects.equal(enabled, template.enabled) && Objects.equal(name, template.name) &&
+                Objects.equal(content, template.content) && Objects.equal(extension, template.extension) &&
+                Objects.equal(suffix, template.suffix);
     }
 
 }

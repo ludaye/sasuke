@@ -1,6 +1,6 @@
 package sasuke;
 
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 
 /**
  * Created by Administrator on 2017/3/12.
@@ -27,7 +27,7 @@ public class WillDoTemplate extends Template {
 
     @Override
     public String toString() {
-        return Objects.toStringHelper(this).add("enabled", getEnabled()).add("name", getName()).add("content", getContent())
+        return MoreObjects.toStringHelper(this).add("enabled", getEnabled()).add("name", getName()).add("content", getContent())
                 .add("extension", getExtension()).add("suffix", getSuffix()).add("path", path).toString();
     }
 }
