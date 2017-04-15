@@ -56,10 +56,10 @@ public class GenerateDialog extends DialogWrapper {
     private ProjectModules projectModules;
 
 
-    public GenerateDialog(@Nullable Project project, MysqlLink mysqlLink, ProjectModules moduleProperties) throws SQLException {
+    public GenerateDialog(@Nullable Project project, MysqlLink mysqlLink, ProjectModules projectModules) throws SQLException {
         super(project);
         this.project = project;
-        this.projectModules = moduleProperties;
+        this.projectModules = projectModules;
 
         getPeer().setContentPane(createCenterPanel());
         initTemplateTable();

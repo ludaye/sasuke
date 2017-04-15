@@ -19,15 +19,15 @@ import java.util.Properties;
 
 import sasuke.ProjectModules;
 import sasuke.SasukeSettings;
+import sasuke.Template;
 
 public class SasukeUtils {
 
     public static final Properties PROPERTIES = stringToProperties(ServiceManager.getService(
             SasukeSettings.class).getProperties());
-    public static final String MODULE_DIR = "$MODULE_DIR$";
-    public static final String URL_PREFIX = "file://";
+    private static final String URL_PREFIX = "file://";
 
-    public static Properties stringToProperties(String string) {
+    private static Properties stringToProperties(String string) {
         Properties result = new Properties();
         try {
             InputStream inputStream = new ByteArrayInputStream(string.getBytes());
@@ -56,5 +56,27 @@ public class SasukeUtils {
             }
         }
         return projectModules;
+    }
+
+
+    public static String getPath(ProjectModules projectModules, Template template) {
+        String name = template.getName();
+        String absolutePath = name + ".absolutePath";
+        if (PROPERTIES.getProperty(absolutePath) != null) {
+            return PROPERTIES.getProperty(absolutePath);
+        }
+        String pathPattern = name + ".pathPattern";
+        if (PROPERTIES.getProperty(pathPattern) == null) {
+            return "";
+        }
+        String extension = template.getExtension();
+        if ("java".equals(extension)) {
+            for (String str : projectModules.getSourcePaths()) {
+
+            }
+        } else {
+
+        }
+        return null;
     }
 }
