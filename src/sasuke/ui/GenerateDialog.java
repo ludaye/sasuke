@@ -1,16 +1,20 @@
 package sasuke.ui;
 
 import com.google.common.base.Strings;
+
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
+
 import org.jetbrains.annotations.Nullable;
+
 import sasuke.*;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
+
 import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -49,12 +53,16 @@ public class GenerateDialog extends DialogWrapper {
     private Map<String, Table> tableMap = new HashMap<>();
     private List<WillDoTemplate> willDoTemplate = new ArrayList<>();
     private List<Table> willDoTable = new ArrayList<>();
+    private ProjectModules projectModules;
 
-    public GenerateDialog(@Nullable Project project, MysqlLink mysqlLink) throws SQLException {
+
+    public GenerateDialog(@Nullable Project project, MysqlLink mysqlLink, ProjectModules moduleProperties) throws SQLException {
         super(project);
         this.project = project;
+        this.projectModules = moduleProperties;
+
         getPeer().setContentPane(createCenterPanel());
-        initTemplateTable(sasukeSettings);
+        initTemplateTable();
         initTable();
 
         schemaSelect.addItem(" ");
@@ -130,7 +138,7 @@ public class GenerateDialog extends DialogWrapper {
         return mainPanel;
     }
 
-    private void initTemplateTable(SasukeSettings sasukeSettings) {
+    private void initTemplateTable() {
         templateTableModel.addColumn("enabled");
         templateTableModel.addColumn("name");
         templateTableModel.addColumn("extension");

@@ -5,6 +5,7 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.EditorFactory;
 import com.intellij.openapi.fileTypes.FileTypeManager;
 import com.intellij.uiDesigner.core.GridConstraints;
+
 import sasuke.SasukeSettings;
 import sasuke.Template;
 
@@ -12,6 +13,7 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
+
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -20,13 +22,13 @@ import java.util.List;
 
 public class SasukeConfiguration {
     private JPanel mainPanel;
-    private JPanel jdbcPanel;
+    private JPanel propertiesPanel;
     private JButton addButton;
     private JTable templateTable;
     private JButton removeButton;
     private JPanel templatePanel;
     private DefaultTableModel model = new DefaultTableModel();
-    private Editor jdbcEditor;
+    private Editor propertiesEditor;
     private List<Editor> templateEditorList = new ArrayList<>();
     private GridConstraints templateConstraints;
     private EditorFactory factory = EditorFactory.getInstance();
@@ -36,15 +38,15 @@ public class SasukeConfiguration {
     public SasukeConfiguration(SasukeSettings sasukeSettings) {
         initTable();
         /**
-         * jdbc编辑器
+         * properties编辑器
          */
-        String jdbcStr = sasukeSettings.getJdbc() == null ? "" : sasukeSettings.getJdbc();
-        Document jdbc = factory.createDocument(jdbcStr);
-        jdbcEditor = factory.createEditor(jdbc, null, fileTypeManager.getFileTypeByExtension("properties"), false);
-        GridConstraints jdbcConstraintsc = new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST,
+        String propertiesStr = sasukeSettings.getProperties() == null ? "" : sasukeSettings.getProperties();
+        Document properties = factory.createDocument(propertiesStr);
+        propertiesEditor = factory.createEditor(properties, null, fileTypeManager.getFileTypeByExtension("properties"), false);
+        GridConstraints propertiesConstraints = new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST,
                 GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW,
                 GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(-1, 130), null, 0, true);
-        jdbcPanel.add(jdbcEditor.getComponent(), jdbcConstraintsc);
+        propertiesPanel.add(propertiesEditor.getComponent(), propertiesConstraints);
         /**
          * 模板
          */
@@ -163,8 +165,8 @@ public class SasukeConfiguration {
         templateEditorList.add(templateEditor);
     }
 
-    public String getJdbc() {
-        return jdbcEditor.getDocument().getText();
+    public String getProperties() {
+        return propertiesEditor.getDocument().getText();
     }
 
     public List<Template> getTemplates() {

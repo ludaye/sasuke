@@ -3,8 +3,10 @@ package sasuke;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
+
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.Nullable;
+
 import sasuke.ui.SasukeConfiguration;
 
 import javax.swing.*;
@@ -40,10 +42,10 @@ public class SasukeConfigurable implements Configurable {
 
     @Override
     public boolean isModified() {
-        if (sasukeSettings.getJdbc() == null || sasukeSettings.getTemplates() == null) {
+        if (sasukeSettings.getProperties() == null || sasukeSettings.getTemplates() == null) {
             return true;
         }
-        if (!sasukeSettings.getJdbc().equals(sasukeConfiguration.getJdbc())) {
+        if (!sasukeSettings.getProperties().equals(sasukeConfiguration.getProperties())) {
             return true;
         }
         if (sasukeSettings.getTemplates().size() != sasukeConfiguration.getTemplates().size()) {
@@ -59,7 +61,7 @@ public class SasukeConfigurable implements Configurable {
 
     @Override
     public void apply() throws ConfigurationException {
-        sasukeSettings.setJdbc(sasukeConfiguration.getJdbc());
+        sasukeSettings.setProperties(sasukeConfiguration.getProperties());
         sasukeSettings.setTemplates(sasukeConfiguration.getTemplates());
     }
 

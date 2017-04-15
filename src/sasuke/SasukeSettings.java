@@ -4,6 +4,7 @@ import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 import com.intellij.util.xmlb.XmlSerializerUtil;
+
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -11,7 +12,7 @@ import java.util.List;
 @State(name = "sasukeSettings", storages = {@Storage(id = "sasuke", file = "$APP_CONFIG$/sasuke-settings.xml")})
 public class SasukeSettings implements PersistentStateComponent<SasukeSettings> {
 
-    private String jdbc = Constant.DEFAULT_JDBC;
+    private String properties = Constant.DEFAULT_JDBC;
     private List<Template> templates = Constant.TEMPLATE_LIST;
 
     @Nullable
@@ -25,19 +26,19 @@ public class SasukeSettings implements PersistentStateComponent<SasukeSettings> 
         XmlSerializerUtil.copyBean(sasukeSettings, this);
     }
 
-    public String getJdbc() {
-        return jdbc;
-    }
-
-    public void setJdbc(String jdbc) {
-        this.jdbc = jdbc;
-    }
-
     public List<Template> getTemplates() {
         return templates;
     }
 
     public void setTemplates(List<Template> templates) {
         this.templates = templates;
+    }
+
+    public String getProperties() {
+        return properties;
+    }
+
+    public void setProperties(String properties) {
+        this.properties = properties;
     }
 }
