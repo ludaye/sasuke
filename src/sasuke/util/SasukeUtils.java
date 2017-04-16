@@ -1,33 +1,27 @@
 package sasuke.util;
 
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ContentEntry;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.SourceFolder;
-
 import org.jetbrains.jps.model.java.JavaResourceRootType;
 import org.jetbrains.jps.model.java.JavaSourceRootType;
 import org.jetbrains.jps.model.module.JpsModuleSourceRootType;
+import sasuke.ProjectModules;
+import sasuke.Template;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Properties;
 
-import sasuke.ProjectModules;
-import sasuke.SasukeSettings;
-import sasuke.Template;
-
 public class SasukeUtils {
-
-    public static final Properties PROPERTIES = stringToProperties(ServiceManager.getService(
-            SasukeSettings.class).getProperties());
     private static final String URL_PREFIX = "file://";
 
-    private static Properties stringToProperties(String string) {
+    public static Properties stringToProperties(String string) {
         Properties result = new Properties();
         try {
             InputStream inputStream = new ByteArrayInputStream(string.getBytes());
@@ -58,25 +52,36 @@ public class SasukeUtils {
         return projectModules;
     }
 
-
-    public static String getPath(ProjectModules projectModules, Template template) {
+    public static String getPath(Properties properties, ProjectModules projectModules, Template template) {
         String name = template.getName();
         String absolutePath = name + ".absolutePath";
-        if (PROPERTIES.getProperty(absolutePath) != null) {
-            return PROPERTIES.getProperty(absolutePath);
+        if (properties.getProperty(absolutePath) != null) {
+            return properties.getProperty(absolutePath);
         }
         String pathPattern = name + ".pathPattern";
-        if (PROPERTIES.getProperty(pathPattern) == null) {
+        if (properties.getProperty(pathPattern) == null) {
             return "";
         }
         String extension = template.getExtension();
+        List<String> list = null;
         if ("java".equals(extension)) {
-            for (String str : projectModules.getSourcePaths()) {
-
-            }
+            list = projectModules.getSourcePaths();
         } else {
-
+            list = projectModules.getResourcePaths();
         }
-        return null;
+        for (String str : list) {
+            if (str.matches(properties.getProperty(pathPattern))) {
+                String packagePath = properties.getProperty(name + ".packagePath");
+                if (packagePath != null) {
+                    if (packagePath.startsWith("/") || packagePath.startsWith("\\")) {
+                        str = str + packagePath;
+                    } else {
+                        str = str + "/" + packagePath;
+                    }
+                }
+                return str;
+            }
+        }
+        return "";
     }
 }

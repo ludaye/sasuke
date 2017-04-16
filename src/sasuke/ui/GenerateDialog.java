@@ -1,28 +1,21 @@
 package sasuke.ui;
 
 import com.google.common.base.Strings;
-
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
-
 import org.jetbrains.annotations.Nullable;
-
 import sasuke.*;
+import sasuke.util.SasukeUtils;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
-
 import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class GenerateDialog extends DialogWrapper {
 
@@ -32,7 +25,7 @@ public class GenerateDialog extends DialogWrapper {
     private JTable table;
     private JButton OKButton;
     private JTextField moduleName;
-    private SasukeSettings sasukeSettings = ServiceManager.getService(SasukeSettings.class);
+    private SasukeSettings sasukeSettings;
     private DefaultTableModel tableModel = new DefaultTableModel() {
         @Override
         public boolean isCellEditable(int row, int column) {
@@ -54,12 +47,15 @@ public class GenerateDialog extends DialogWrapper {
     private List<WillDoTemplate> willDoTemplate = new ArrayList<>();
     private List<Table> willDoTable = new ArrayList<>();
     private ProjectModules projectModules;
+    private Properties properties;
 
-
-    public GenerateDialog(@Nullable Project project, MysqlLink mysqlLink, ProjectModules projectModules) throws SQLException {
+    public GenerateDialog(@Nullable Project project, MysqlLink mysqlLink, ProjectModules projectModules,
+                          SasukeSettings sasukeSettings, Properties properties) throws SQLException {
         super(project);
         this.project = project;
         this.projectModules = projectModules;
+        this.sasukeSettings = sasukeSettings;
+        this.properties = properties;
 
         getPeer().setContentPane(createCenterPanel());
         initTemplateTable();
@@ -126,11 +122,10 @@ public class GenerateDialog extends DialogWrapper {
                         willDoTable.add(table);
                     }
                 }
-
             }
         });
+        moduleName.getDocument().addDocumentListener(new MyDocumentListener(templateTableModel, moduleName));
     }
-
 
     @Nullable
     @Override
@@ -186,7 +181,8 @@ public class GenerateDialog extends DialogWrapper {
         List<Template> templates = sasukeSettings.getTemplates();
         if (templates != null && templates.size() > 0) {
             templates.stream().filter(Template::getEnabled).forEach(t -> {
-                        templateTableModel.addRow(new Object[]{true, t.getName(), t.getExtension(), t.getSuffix(), ""});
+                        String path = SasukeUtils.getPath(properties, projectModules, t);
+                        templateTableModel.addRow(new Object[]{true, t.getName(), t.getExtension(), t.getSuffix(), path});
                         tempalteMap.put(t.getName(), t);
                     }
             );

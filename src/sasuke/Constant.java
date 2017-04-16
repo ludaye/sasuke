@@ -6,9 +6,11 @@ import java.util.List;
 import java.util.Map;
 
 public class Constant {
-    public static final String DEFAULT_JDBC = "url=\n" +
+    public static final String DEFAULT_JDBC = "url=jdbc:mysql://localhost:3306\n" +
             "user=root\n" +
-            "password=123456\n";
+            "password=123456\n" +
+            "entity.pathPattern=.*module1.*\n" +
+            "entity.packagePath=com/lu/entity";
     public static final List<Template> TEMPLATE_LIST = new ArrayList<>();
     public static final Map<String, String> MAP = new HashMap<>();
 
@@ -18,7 +20,7 @@ public class Constant {
     }
 
     private static void initList() {
-        Template template = new Template(true, "test", "test", "java", "Entity");
+        Template template = new Template(true, "entity", "test", "java", "Entity");
         TEMPLATE_LIST.add(template);
     }
 
