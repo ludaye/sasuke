@@ -39,7 +39,9 @@ public class MyDocumentListener implements DocumentListener {
             String text = moduleName.getText();
             String result = "";
             if (text.length() == 0) {
-                result = at.substring(0, at.length() - 2);
+                if (at.charAt(at.length() - 2) == '/') {
+                    result = at.substring(0, at.length() - 2);
+                }
             } else {
                 result = at.substring(0, at.length() - text.length() - 1) + text;
             }

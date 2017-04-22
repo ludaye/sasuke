@@ -6,9 +6,11 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ContentEntry;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.SourceFolder;
+
 import org.jetbrains.jps.model.java.JavaResourceRootType;
 import org.jetbrains.jps.model.java.JavaSourceRootType;
 import org.jetbrains.jps.model.module.JpsModuleSourceRootType;
+
 import sasuke.ProjectModules;
 import sasuke.Template;
 
@@ -33,7 +35,7 @@ public class SasukeUtils {
         return result;
     }
 
-    public static ProjectModules findProjectModulePaths(Project project) {
+    public static ProjectModules findProjectModulePaths(Project project, Module currentModule) {
         ProjectModules projectModules = new ProjectModules();
         Module[] modules = ModuleManager.getInstance(project).getModules();
         for (Module module : modules) {
@@ -42,9 +44,17 @@ public class SasukeUtils {
                 for (SourceFolder folder : entry.getSourceFolders()) {
                     JpsModuleSourceRootType<?> rootType = folder.getRootType();
                     if (JavaSourceRootType.SOURCE.equals(rootType)) {
-                        projectModules.getSourcePaths().add(folder.getUrl().replace(URL_PREFIX, ""));
+                        if (module.equals(currentModule)) {
+                            projectModules.getSourcePaths().addFirst(folder.getUrl().replace(URL_PREFIX, ""));
+                        } else {
+                            projectModules.getSourcePaths().addLast(folder.getUrl().replace(URL_PREFIX, ""));
+                        }
                     } else if (JavaResourceRootType.RESOURCE.equals(rootType)) {
-                        projectModules.getResourcePaths().add(folder.getUrl().replace(URL_PREFIX, ""));
+                        if (module.equals(currentModule)) {
+                            projectModules.getResourcePaths().addFirst(folder.getUrl().replace(URL_PREFIX, ""));
+                        } else {
+                            projectModules.getResourcePaths().addLast(folder.getUrl().replace(URL_PREFIX, ""));
+                        }
                     }
                 }
             }

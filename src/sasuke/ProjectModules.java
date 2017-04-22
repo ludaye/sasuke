@@ -1,25 +1,24 @@
 package sasuke;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedList;
 
 public class ProjectModules {
-    private List<String> sourcePaths = new ArrayList<>();
-    private List<String> resourcePaths = new ArrayList<>();
+    private LinkedList<String> sourcePaths = new LinkedList<>();
+    private LinkedList<String> resourcePaths = new LinkedList<>();
 
-    public List<String> getSourcePaths() {
+    public LinkedList<String> getSourcePaths() {
         return sourcePaths;
     }
 
-    public void setSourcePaths(List<String> sourcePaths) {
+    public void setSourcePaths(LinkedList<String> sourcePaths) {
         this.sourcePaths = sourcePaths;
     }
 
-    public List<String> getResourcePaths() {
+    public LinkedList<String> getResourcePaths() {
         return resourcePaths;
     }
 
-    public void setResourcePaths(List<String> resourcePaths) {
+    public void setResourcePaths(LinkedList<String> resourcePaths) {
         this.resourcePaths = resourcePaths;
     }
 }
