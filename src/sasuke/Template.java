@@ -76,10 +76,7 @@ public class Template {
             return false;
         }
         Template template = (Template) obj;
-        if (isEquals(template)) {
-            return true;
-        }
-        return false;
+        return isEquals(template);
     }
 
     private boolean isEquals(Template template) {

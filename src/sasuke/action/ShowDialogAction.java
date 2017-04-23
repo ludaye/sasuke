@@ -7,16 +7,15 @@ import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
-
-import java.sql.SQLException;
-import java.util.Properties;
-
 import sasuke.Icons;
 import sasuke.MysqlLink;
 import sasuke.ProjectModules;
 import sasuke.SasukeSettings;
 import sasuke.ui.GenerateDialog;
 import sasuke.util.SasukeUtils;
+
+import java.sql.SQLException;
+import java.util.Properties;
 
 public class ShowDialogAction extends AnAction {
 
@@ -35,6 +34,7 @@ public class ShowDialogAction extends AnAction {
                 properties.getProperty("password"))) {
             Project project = e.getProject();
             ProjectModules projectModules = SasukeUtils.findProjectModulePaths(project, currentModule);
+
             GenerateDialog generateDialog = new GenerateDialog(project, mysqlLink, projectModules, sasukeSettings, properties);
             generateDialog.show();
         } catch (SQLException | ClassNotFoundException e1) {

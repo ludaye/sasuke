@@ -21,7 +21,7 @@ public class GenerateDialog extends DialogWrapper {
 
     private JPanel mainPanel;
     private JTable templateTable;
-    private JComboBox schemaSelect;
+    private JComboBox<String> schemaSelect;
     private JTable table;
     private JButton OKButton;
     private JTextField moduleName;
@@ -82,7 +82,7 @@ public class GenerateDialog extends DialogWrapper {
                                 tables.forEach((s, t) -> tableModel.addRow(new Object[]{false, t.getName(), t.getUpCamelName()}));
                             }
                         } catch (SQLException e1) {
-                            throw new RuntimeException("查询表名失败 " + e1.getMessage(), e1);
+                            throw new RuntimeException("查询表名失败\n" + e1.getMessage(), e1);
                         }
                     }
                 }
@@ -93,6 +93,9 @@ public class GenerateDialog extends DialogWrapper {
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
                 int templateTableModelRowCount = templateTableModel.getRowCount();
+                if (templateTableModelRowCount == 0) {
+                    throw new RuntimeException("请添加模板");
+                }
                 for (int i = 0; i < templateTableModelRowCount; i++) {
                     boolean enabled = (boolean) templateTableModel.getValueAt(i, 0);
                     if (enabled) {
@@ -103,7 +106,6 @@ public class GenerateDialog extends DialogWrapper {
                         String name = (String) templateTableModel.getValueAt(i, 1);
                         Template template = tempalteMap.get(name);
                         WillDoTemplate e1 = new WillDoTemplate(template, path);
-                        System.out.println(e1);
                         willDoTemplate.add(e1);
                     }
                 }
@@ -118,10 +120,15 @@ public class GenerateDialog extends DialogWrapper {
                         String tableName = (String) tableModel.getValueAt(i, 1);
                         Table table = tableMap.get(tableName);
                         table.setUpCamelName(entityName);
-                        System.out.println(table);
+                        try {
+                            table = mysqlLink.getTable(schemaSelect.getSelectedItem().toString(), table);
+                        } catch (SQLException e1) {
+                            throw new RuntimeException(e1.getMessage(), e1);
+                        }
                         willDoTable.add(table);
                     }
                 }
+
             }
         });
         moduleName.getDocument().addDocumentListener(new MyDocumentListener(templateTableModel, moduleName));
@@ -176,10 +183,14 @@ public class GenerateDialog extends DialogWrapper {
         column_5.setPreferredWidth(25);
         column_5.setMaxWidth(25);
         column_5.setCellRenderer(new ButtonRenderer());
-        column_5.setCellEditor(new ButtonEditor(project));
+        column_5.setCellEditor(new ButtonEditor(project, moduleName));
 
         List<Template> templates = sasukeSettings.getTemplates();
         if (templates != null && templates.size() > 0) {
+            long count = templates.stream().map(Template::getName).distinct().count();
+            if (count != templates.size()) {
+                throw new RuntimeException("模板名不能重复");
+            }
             templates.stream().filter(Template::getEnabled).forEach(t -> {
                         String path = SasukeUtils.getPath(properties, projectModules, t);
                         templateTableModel.addRow(new Object[]{true, t.getName(), t.getExtension(), t.getSuffix(), path});
