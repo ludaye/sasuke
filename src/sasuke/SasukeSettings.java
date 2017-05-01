@@ -5,14 +5,15 @@ import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 import com.intellij.util.xmlb.XmlSerializerUtil;
 import org.jetbrains.annotations.Nullable;
+import sasuke.common.Constants;
 
 import java.util.List;
 
 @State(name = "sasukeSettings", storages = {@Storage(id = "sasuke", file = "$APP_CONFIG$/sasuke-settings.xml")})
 public class SasukeSettings implements PersistentStateComponent<SasukeSettings> {
 
-    private String properties = Constant.DEFAULT_JDBC;
-    private List<Template> templates = Constant.TEMPLATE_LIST;
+    private String properties = Constants.DEFAULT_JDBC;
+    private List<Template> templates = Constants.TEMPLATE_LIST;
 
     @Nullable
     @Override

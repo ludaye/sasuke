@@ -32,7 +32,7 @@ public class ProcessIcon extends AnimatedIcon {
 
     private static final Icon STEP_PASSIVE = IconLoader.getIcon("/process/fs/step_passive@2x.png");
 
-    ProcessIcon() {
+    public ProcessIcon() {
         super("Querying Process", ICONS, STEP_PASSIVE, CYCLE_LENGTH);
     }
 }

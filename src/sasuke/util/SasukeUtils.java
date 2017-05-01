@@ -6,19 +6,19 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ContentEntry;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.SourceFolder;
-
+import com.yourkit.util.Strings;
+import freemarker.cache.StringTemplateLoader;
+import freemarker.template.Configuration;
+import freemarker.template.TemplateException;
 import org.jetbrains.jps.model.java.JavaResourceRootType;
 import org.jetbrains.jps.model.java.JavaSourceRootType;
 import org.jetbrains.jps.model.module.JpsModuleSourceRootType;
+import sasuke.*;
+import sasuke.common.Constants;
 
-import sasuke.ProjectModules;
-import sasuke.Template;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-import java.util.Properties;
+import java.io.*;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class SasukeUtils {
     private static final String URL_PREFIX = "file://";
@@ -93,5 +93,127 @@ public class SasukeUtils {
             }
         }
         return "";
+    }
+
+    public static TaskResult generateFile(List<WillDoTemplate> templates, List<Table> tables,
+                                          ProjectModules projectModules) {
+        Writer out = null;
+        TaskResult result = new TaskResult();
+        String path = "";
+        Configuration configuration = new Configuration();
+        configuration.setDefaultEncoding("UTF-8");
+        StringTemplateLoader loader = new StringTemplateLoader();
+        templates.forEach(t -> loader.putTemplate(t.getName(), t.getContent()));
+        configuration.setTemplateLoader(loader);
+        for (Table table : tables) {
+            for (WillDoTemplate willDoTemplate : templates) {
+                try {
+                    freemarker.template.Template template = configuration.getTemplate(willDoTemplate.getName());
+                    template.setEncoding("UTF-8");
+                    String folderPath = willDoTemplate.getPath();
+                    File folder = new File(folderPath);
+                    if (!folder.exists()) {
+                        folder.mkdirs();
+                    }
+                    path = folderPath + File.separator + table.getUpCamelName() +
+                            willDoTemplate.getSuffix() + "." + willDoTemplate.getExtension();
+                    File file = new File(path);
+                    if (file.exists()) {
+                        result.getSkip().add(path);
+                        continue;
+                    }
+                    out = new OutputStreamWriter(new FileOutputStream(path), "UTF-8");
+                    Map<String, Object> root = getDateModel(willDoTemplate, table, projectModules,
+                            willDoTemplate.getPath());
+                    template.process(root, out);
+                    out.close();
+                    result.getSuccess().add(path);
+                    path = "";
+                } catch (TemplateException | IOException e) {
+                    if (!Strings.isNullOrEmpty(path)) {
+                        result.getFailure().add(path);
+                    }
+                    if (out != null) {
+                        try {
+                            out.close();
+                        } catch (IOException e1) {
+                            e1.printStackTrace();
+                        }
+                    }
+                    throw new RuntimeException(e.getMessage(), e);
+                }
+            }
+        }
+        return result;
+    }
+
+    private static Map<String, Object> getDateModel(WillDoTemplate template, Table table, ProjectModules projectModules,
+                                                    String path) {
+        Map<String, Object> result = new HashMap<>();
+        if ("java".equals(template.getExtension())) {
+            result.put("className", table.getUpCamelName() + template.getSuffix());
+            result.put("packageName", getPackageName(projectModules, path));
+            List<ClassProperty> value = ColumnToClassProperty(table.getColumns());
+            result.put("properties", value);
+            result.put("user", System.getProperty("user.name"));
+            result.put("remark", table.getRemark());
+        } else {
+
+        }
+        return result;
+    }
+
+    private static String getPackageName(ProjectModules projectModules, String path) {
+        LinkedList<String> sourcePaths = projectModules.getSourcePaths();
+        for (String str : sourcePaths) {
+            if (path.startsWith(str)) {
+                String packageName = path.replace(str, "");
+                packageName = packageName.replaceAll("/|\\\\", "\\.");
+                if (packageName.startsWith(".")) {
+                    packageName = packageName.substring(1, packageName.length());
+                }
+                return packageName;
+            }
+        }
+        return null;
+    }
+
+    public static String getResultStr(TaskResult result) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("成功").append(result.getSuccess().size()).append("个");
+        if (result.getSuccess().size() > 0) {
+            builder.append("：");
+        }
+        builder.append("\n");
+        result.getSuccess().forEach(str -> builder.append(str).append("\n"));
+
+        builder.append("失败").append(result.getFailure().size()).append("个");
+        if (result.getFailure().size() > 0) {
+            builder.append("：");
+        }
+        builder.append("\n");
+        result.getFailure().forEach(str -> builder.append(str).append("\n"));
+
+        builder.append("跳过").append(result.getSkip().size()).append("个");
+        if (result.getSkip().size() > 0) {
+            builder.append("：");
+        }
+        builder.append("\n");
+        result.getSkip().forEach(str -> builder.append(str).append("\n"));
+        return builder.toString();
+    }
+
+    private static List<ClassProperty> ColumnToClassProperty(List<Column> columns) {
+        return columns.stream().map(column -> {
+            ClassProperty property = new ClassProperty();
+            property.setRemark(column.getRemark());
+            property.setName(column.getName());
+            property.setLowCamelName(column.getLowCamelName());
+            property.setUpCamelName(column.getUpCamelName());
+            property.setFullNameType(Constants.MAP.getOrDefault(column.getType(), "java.lang.String"));
+            String fullNameType = property.getFullNameType();
+            property.setType(fullNameType.substring(fullNameType.lastIndexOf(".") + 1, fullNameType.length()));
+            return property;
+        }).collect(Collectors.toList());
     }
 }

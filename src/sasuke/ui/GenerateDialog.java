@@ -1,8 +1,10 @@
 package sasuke.ui;
 
 import com.google.common.base.Strings;
+import com.intellij.openapi.progress.BackgroundTaskQueue;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
+import com.intellij.util.ui.AnimatedIcon;
 import org.jetbrains.annotations.Nullable;
 import sasuke.*;
 import sasuke.util.SasukeUtils;
@@ -11,20 +13,30 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
+import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.List;
 
 public class GenerateDialog extends DialogWrapper {
-
+    private static final String CARD_MSG = "msg";
+    private static final String CARD_PROCESS = "process";
+    private static final String CARD_TABLE = "table";
     private JPanel mainPanel;
     private JTable templateTable;
     private JComboBox<String> schemaSelect;
     private JTable table;
     private JButton OKButton;
     private JTextField moduleName;
+    private JPanel msgPanel;
+    private JPanel processPanel;
+    private AnimatedIcon animatedIcon;
+    private JScrollPane tablePanel;
+    private JPanel cardPanel;
+    private CardLayout cardLayout;
     private SasukeSettings sasukeSettings;
     private DefaultTableModel tableModel = new DefaultTableModel() {
         @Override
@@ -57,9 +69,11 @@ public class GenerateDialog extends DialogWrapper {
         this.sasukeSettings = sasukeSettings;
         this.properties = properties;
 
+        cardLayout = (CardLayout) cardPanel.getLayout();
         getPeer().setContentPane(createCenterPanel());
         initTemplateTable();
         initTable();
+        cardLayout.show(cardPanel, CARD_MSG);
 
         schemaSelect.addItem(" ");
         List<String> schemas = mysqlLink.findSchemas();
@@ -68,25 +82,35 @@ public class GenerateDialog extends DialogWrapper {
         }
 
         schemaSelect.addItemListener(e -> {
-                    int stateChange = e.getStateChange();
-                    if (stateChange == ItemEvent.SELECTED) {
-                        String string = schemaSelect.getSelectedItem().toString();
-                        tableModel.setRowCount(0);
-                        if (string.trim().equals("")) {
-                            return;
-                        }
-                        try {
-                            Map<String, Table> tables = mysqlLink.findTables(string);
-                            if (tables != null) {
-                                tableMap = tables;
-                                tables.forEach((s, t) -> tableModel.addRow(new Object[]{false, t.getName(), t.getUpCamelName()}));
-                            }
-                        } catch (SQLException e1) {
-                            throw new RuntimeException("查询表名失败\n" + e1.getMessage(), e1);
-                        }
-                    }
+            int stateChange = e.getStateChange();
+            if (stateChange == ItemEvent.SELECTED) {
+                cardLayout.show(cardPanel, CARD_PROCESS);
+                animatedIcon.resume();
+                String string = schemaSelect.getSelectedItem().toString();
+                tableModel.setRowCount(0);
+                if (string.trim().equals("")) {
+                    cardLayout.show(cardPanel, CARD_MSG);
+                    animatedIcon.suspend();
+                    return;
                 }
-        );
+                try {
+                    Map<String, Table> tables = mysqlLink.findTables(string);
+                    if (tables != null && tables.size() > 0) {
+                        cardLayout.show(cardPanel, CARD_TABLE);
+                        animatedIcon.suspend();
+                        tableMap = tables;
+                        tables.forEach((s, t) -> tableModel.addRow(new Object[]{false, t.getName(), t.getUpCamelName()}));
+                    } else {
+                        cardLayout.show(cardPanel, CARD_MSG);
+                        animatedIcon.suspend();
+                    }
+                } catch (SQLException e1) {
+                    cardLayout.show(cardPanel, CARD_MSG);
+                    animatedIcon.suspend();
+                    throw new RuntimeException("查询表名失败\n" + e1.getMessage(), e1);
+                }
+            }
+        });
 
         OKButton.addMouseListener(new MouseAdapter() {
             @Override
@@ -96,6 +120,7 @@ public class GenerateDialog extends DialogWrapper {
                 if (templateTableModelRowCount == 0) {
                     throw new RuntimeException("请添加模板");
                 }
+                willDoTemplate.clear();
                 for (int i = 0; i < templateTableModelRowCount; i++) {
                     boolean enabled = (boolean) templateTableModel.getValueAt(i, 0);
                     if (enabled) {
@@ -110,6 +135,7 @@ public class GenerateDialog extends DialogWrapper {
                     }
                 }
                 int rowCount = tableModel.getRowCount();
+                willDoTable.clear();
                 for (int i = 0; i < rowCount; i++) {
                     boolean enabled = (boolean) tableModel.getValueAt(i, 0);
                     if (enabled) {
@@ -128,7 +154,11 @@ public class GenerateDialog extends DialogWrapper {
                         willDoTable.add(table);
                     }
                 }
-
+                BackgroundTaskQueue myQueue = new BackgroundTaskQueue(project, "my task");
+                SasukeTask task = new SasukeTask(project, "Generate Tasks", false, willDoTemplate, willDoTable,
+                        projectModules);
+                myQueue.run(task);
+                close(0);
             }
         });
         moduleName.getDocument().addDocumentListener(new MyDocumentListener(templateTableModel, moduleName));
@@ -217,5 +247,9 @@ public class GenerateDialog extends DialogWrapper {
         column_1.setPreferredWidth(50);
         column_1.setMaxWidth(50);
 
+    }
+
+    private void createUIComponents() {
+        animatedIcon = new ProcessIcon();
     }
 }

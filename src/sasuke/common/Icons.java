@@ -1,4 +1,4 @@
-package sasuke;
+package sasuke.common;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.util.IconLoader;
