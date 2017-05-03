@@ -1,5 +1,7 @@
 package sasuke.util;
 
+import com.google.common.collect.*;
+
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
@@ -7,13 +9,17 @@ import com.intellij.openapi.roots.ContentEntry;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.SourceFolder;
 import com.yourkit.util.Strings;
+
 import freemarker.cache.StringTemplateLoader;
 import freemarker.template.Configuration;
 import freemarker.template.TemplateException;
+
 import org.jetbrains.jps.model.java.JavaResourceRootType;
 import org.jetbrains.jps.model.java.JavaSourceRootType;
 import org.jetbrains.jps.model.module.JpsModuleSourceRootType;
+
 import sasuke.*;
+import sasuke.Table;
 import sasuke.common.Constants;
 
 import java.io.*;
@@ -96,7 +102,7 @@ public class SasukeUtils {
     }
 
     public static TaskResult generateFile(List<WillDoTemplate> templates, List<Table> tables,
-                                          ProjectModules projectModules) {
+            ProjectModules projectModules) {
         Writer out = null;
         TaskResult result = new TaskResult();
         String path = "";
@@ -104,6 +110,7 @@ public class SasukeUtils {
         configuration.setDefaultEncoding("UTF-8");
         StringTemplateLoader loader = new StringTemplateLoader();
         templates.forEach(t -> loader.putTemplate(t.getName(), t.getContent()));
+        HashBasedTable<String, String, TemplateProperty> templateTable = templateTable(templates, tables, projectModules);
         configuration.setTemplateLoader(loader);
         for (Table table : tables) {
             for (WillDoTemplate willDoTemplate : templates) {
@@ -123,8 +130,7 @@ public class SasukeUtils {
                         continue;
                     }
                     out = new OutputStreamWriter(new FileOutputStream(path), "UTF-8");
-                    Map<String, Object> root = getDateModel(willDoTemplate, table, projectModules,
-                            willDoTemplate.getPath());
+                    Map<String, Object> root = getDateModel(willDoTemplate, table, templateTable);
                     template.process(root, out);
                     out.close();
                     result.getSuccess().add(path);
@@ -147,18 +153,37 @@ public class SasukeUtils {
         return result;
     }
 
-    private static Map<String, Object> getDateModel(WillDoTemplate template, Table table, ProjectModules projectModules,
-                                                    String path) {
+    private static Map<String, Object> getDateModel(WillDoTemplate template, Table table,
+            HashBasedTable<String, String, TemplateProperty> templateTable) {
         Map<String, Object> result = new HashMap<>();
+        TemplateProperty property = templateTable.get(table.getName(), template.getName());
+        Map<String, TemplateProperty> map = templateTable.rowMap().get(table.getName());
+        result.put("properties", ColumnToClassProperty(table.getColumns()));
+        result.put("templates", map);
+        result.put("schema", table.getSchema());
+        result.put("table", table.getName());
         if ("java".equals(template.getExtension())) {
-            result.put("className", table.getUpCamelName() + template.getSuffix());
-            result.put("packageName", getPackageName(projectModules, path));
-            List<ClassProperty> value = ColumnToClassProperty(table.getColumns());
-            result.put("properties", value);
+            result.put("className", property.getFileName());
+            result.put("packageName", property.getPackageName());
             result.put("user", System.getProperty("user.name"));
             result.put("remark", table.getRemark());
-        } else {
+        }
+        return result;
+    }
 
+    private static HashBasedTable<String, String, TemplateProperty> templateTable(List<WillDoTemplate> templates,
+            List<Table> tables, ProjectModules projectModules) {
+        HashBasedTable<String, String, TemplateProperty> result = HashBasedTable.create();
+        for (Table table : tables) {
+            for (WillDoTemplate template : templates) {
+                TemplateProperty property = new TemplateProperty();
+                property.setFileName(table.getUpCamelName() + template.getSuffix());
+                if ("java".equals(template.getExtension())) {
+                    property.setPackageName(getPackageName(projectModules, template.getPath()));
+                }
+                property.setExtension(template.getExtension());
+                result.put(table.getName(), template.getName(), property);
+            }
         }
         return result;
     }
@@ -207,9 +232,10 @@ public class SasukeUtils {
         return columns.stream().map(column -> {
             ClassProperty property = new ClassProperty();
             property.setRemark(column.getRemark());
-            property.setName(column.getName());
+            property.setColumnName(column.getName());
             property.setLowCamelName(column.getLowCamelName());
             property.setUpCamelName(column.getUpCamelName());
+            property.setColumnType(column.getType().toUpperCase());
             property.setFullNameType(Constants.MAP.getOrDefault(column.getType(), "java.lang.String"));
             String fullNameType = property.getFullNameType();
             property.setType(fullNameType.substring(fullNameType.lastIndexOf(".") + 1, fullNameType.length()));

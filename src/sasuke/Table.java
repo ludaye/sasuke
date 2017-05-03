@@ -5,6 +5,7 @@ import com.google.common.base.Objects;
 import java.util.List;
 
 public class Table {
+    private String schema;
     private String name;
     private String upCamelName;
     private String remark;
@@ -14,7 +15,8 @@ public class Table {
 
     }
 
-    public Table(String name, String upCamelName, String remark, List<Column> columns) {
+    public Table(String schema, String name, String upCamelName, String remark, List<Column> columns) {
+        this.schema = schema;
         this.name = name;
         this.upCamelName = upCamelName;
         this.remark = remark;
@@ -51,6 +53,14 @@ public class Table {
 
     public void setUpCamelName(String upCamelName) {
         this.upCamelName = upCamelName;
+    }
+
+    public String getSchema() {
+        return schema;
+    }
+
+    public void setSchema(String schema) {
+        this.schema = schema;
     }
 
     @Override

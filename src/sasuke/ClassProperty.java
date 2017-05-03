@@ -1,20 +1,13 @@
 package sasuke;
 
 public class ClassProperty {
-    private String name;
+    private String columnName;
     private String lowCamelName;
     private String upCamelName;
     private String type;
     private String fullNameType;
+    private String columnType;
     private String remark;
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 
     public String getUpCamelName() {
         return upCamelName;
@@ -54,5 +47,21 @@ public class ClassProperty {
 
     public void setLowCamelName(String lowCamelName) {
         this.lowCamelName = lowCamelName;
+    }
+
+    public String getColumnName() {
+        return columnName;
+    }
+
+    public void setColumnName(String columnName) {
+        this.columnName = columnName;
+    }
+
+    public String getColumnType() {
+        return columnType;
+    }
+
+    public void setColumnType(String columnType) {
+        this.columnType = columnType;
     }
 }

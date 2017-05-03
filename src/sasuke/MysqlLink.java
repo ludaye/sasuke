@@ -36,7 +36,7 @@ public class MysqlLink implements AutoCloseable {
         while (rs.next()) {
             String tableName = rs.getString("TABLE_NAME");
             String remarks = rs.getString("REMARKS");
-            Table table = new Table(tableName, CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, tableName),
+            Table table = new Table(schema, tableName, CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, tableName),
                     remarks, null);
             map.put(tableName, table);
         }
