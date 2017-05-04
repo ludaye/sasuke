@@ -8,6 +8,7 @@ public class ClassProperty {
     private String fullNameType;
     private String columnType;
     private String remark;
+    private Boolean isid;
 
     public String getUpCamelName() {
         return upCamelName;
@@ -63,5 +64,13 @@ public class ClassProperty {
 
     public void setColumnType(String columnType) {
         this.columnType = columnType;
+    }
+
+    public Boolean getIsid() {
+        return isid;
+    }
+
+    public void setIsid(Boolean isid) {
+        this.isid = isid;
     }
 }

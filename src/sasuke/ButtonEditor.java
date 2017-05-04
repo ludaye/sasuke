@@ -7,11 +7,13 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import sasuke.common.Icons;
+import sasuke.util.SasukeUtils;
 
 import javax.swing.*;
 import javax.swing.table.TableCellEditor;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.util.Properties;
 
 public class ButtonEditor extends AbstractCellEditor implements TableCellEditor {
 
@@ -19,10 +21,12 @@ public class ButtonEditor extends AbstractCellEditor implements TableCellEditor 
     private ActionListener actionListener;
     private Project project;
     private JTextField moduleName;
+    private Properties properties;
 
-    public ButtonEditor(Project project, JTextField moduleName) {
+    public ButtonEditor(Project project, JTextField moduleName, Properties properties) {
         this.project = project;
         this.moduleName = moduleName;
+        this.properties = properties;
         button = new JButton(Icons.MENU_OPEN);
         button.setOpaque(false);
         button.setBorder(null);
@@ -40,7 +44,8 @@ public class ButtonEditor extends AbstractCellEditor implements TableCellEditor 
                 if (virtualFile != null) {
                     String path = virtualFile.getPath();
                     String text = moduleName.getText();
-                    if (text.length() > 0) {
+                    String templateName = (String) table.getValueAt(table.getSelectedRow(), 1);
+                    if (text.length() > 0 && !SasukeUtils.isIgnoreModuleName(templateName, properties)) {
                         path = path + "/" + text;
                     }
                     table.setValueAt(path, table.getSelectedRow(), table.getSelectedColumn() - 1);

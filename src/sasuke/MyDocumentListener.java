@@ -1,20 +1,25 @@
 package sasuke;
 
+import sasuke.util.SasukeUtils;
+
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
+import java.util.Properties;
 
 public class MyDocumentListener implements DocumentListener {
 
     private DefaultTableModel templateTableModel;
     private JTextField moduleName;
     private String last;
+    private Properties properties;
 
-    public MyDocumentListener(DefaultTableModel templateTableModel, JTextField moduleName) {
+    public MyDocumentListener(DefaultTableModel templateTableModel, JTextField moduleName, Properties properties) {
         this.templateTableModel = templateTableModel;
         this.moduleName = moduleName;
         last = moduleName.getText();
+        this.properties = properties;
     }
 
     @Override
@@ -23,6 +28,10 @@ public class MyDocumentListener implements DocumentListener {
         String text = moduleName.getText();
         for (int i = 0; i < rowCount; i++) {
             String at = (String) templateTableModel.getValueAt(i, 4);
+            String templateName = (String) templateTableModel.getValueAt(i, 1);
+            if (SasukeUtils.isIgnoreModuleName(templateName, properties)) {
+                continue;
+            }
             String result = "";
             if (last.length() == 0) {
                 result = at + "/" + text;
@@ -40,6 +49,10 @@ public class MyDocumentListener implements DocumentListener {
         String text = moduleName.getText();
         for (int i = 0; i < rowCount; i++) {
             String at = (String) templateTableModel.getValueAt(i, 4);
+            String templateName = (String) templateTableModel.getValueAt(i, 1);
+            if (SasukeUtils.isIgnoreModuleName(templateName, properties)) {
+                continue;
+            }
             String result = "";
             if (text.length() == 0) {
                 result = at.substring(0, at.length() - last.length() - 1);

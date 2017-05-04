@@ -1,24 +1,26 @@
-/**
- *   Copyright (c) 2014-2017 墨博云舟 All Rights Reserved. 
- */
 package sasuke;
 
 public class Column {
+    private Boolean isid;
     private String name;
     private String lowCamelName;
     private String upCamelName;
     private String type;
     private String remark;
+    private Integer length;
 
     public Column() {
     }
 
-    public Column(String name, String lowCamelName, String upCamelName, String type, String remark) {
+    public Column(Boolean isid, String name, String lowCamelName, String upCamelName, String type, String remark,
+                  Integer length) {
+        this.isid = isid;
         this.name = name;
         this.lowCamelName = lowCamelName;
         this.upCamelName = upCamelName;
         this.type = type;
         this.remark = remark;
+        this.length = length;
     }
 
     public String getName() {
@@ -59,5 +61,21 @@ public class Column {
 
     public void setUpCamelName(String upCamelName) {
         this.upCamelName = upCamelName;
+    }
+
+    public Boolean getIsid() {
+        return isid;
+    }
+
+    public void setIsid(Boolean isid) {
+        this.isid = isid;
+    }
+
+    public Integer getLength() {
+        return length;
+    }
+
+    public void setLength(Integer length) {
+        this.length = length;
     }
 }

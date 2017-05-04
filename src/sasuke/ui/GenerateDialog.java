@@ -1,7 +1,6 @@
 package sasuke.ui;
 
 import com.google.common.base.Strings;
-import com.intellij.openapi.progress.BackgroundTaskQueue;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.util.ui.AnimatedIcon;
@@ -147,21 +146,21 @@ public class GenerateDialog extends DialogWrapper {
                         Table table = tableMap.get(tableName);
                         table.setUpCamelName(entityName);
                         try {
-                            table = mysqlLink.getTable(schemaSelect.getSelectedItem().toString(), table);
+                            table = mysqlLink.getTable(table);
                         } catch (SQLException e1) {
                             throw new RuntimeException(e1.getMessage(), e1);
                         }
                         willDoTable.add(table);
                     }
                 }
-                BackgroundTaskQueue myQueue = new BackgroundTaskQueue(project, "my task");
-                SasukeTask task = new SasukeTask(project, "Generate Tasks", false, willDoTemplate, willDoTable,
-                        projectModules);
-                myQueue.run(task);
-                close(0);
+//                BackgroundTaskQueue myQueue = new BackgroundTaskQueue(project, "my task");
+//                SasukeTask task = new SasukeTask(project, "Generate Tasks", false, willDoTemplate, willDoTable,
+//                        projectModules);
+//                myQueue.run(task);
+//                close(0);
             }
         });
-        moduleName.getDocument().addDocumentListener(new MyDocumentListener(templateTableModel, moduleName));
+        moduleName.getDocument().addDocumentListener(new MyDocumentListener(templateTableModel, moduleName, properties));
     }
 
     @Nullable
@@ -213,7 +212,7 @@ public class GenerateDialog extends DialogWrapper {
         column_5.setPreferredWidth(25);
         column_5.setMaxWidth(25);
         column_5.setCellRenderer(new ButtonRenderer());
-        column_5.setCellEditor(new ButtonEditor(project, moduleName));
+        column_5.setCellEditor(new ButtonEditor(project, moduleName, properties));
 
         List<Template> templates = sasukeSettings.getTemplates();
         if (templates != null && templates.size() > 0) {

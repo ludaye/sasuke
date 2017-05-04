@@ -44,15 +44,25 @@ public class MysqlLink implements AutoCloseable {
         return map;
     }
 
-    public Table getTable(String schema, Table table) throws SQLException {
+    public Table getTable(Table table) throws SQLException {
         List<Column> columns = new ArrayList<>();
-        ResultSet rs = dmd.getColumns(schema, null, table.getName(), null);
+        ResultSet rs = dmd.getColumns(table.getSchema(), null, table.getName(), null);
         while (rs.next()) {
             String columnName = rs.getString("COLUMN_NAME");
             String low = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, columnName);
             String up = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, columnName);
-            Column column = new Column(columnName, low, up, rs.getString("TYPE_NAME"), rs.getString("REMARKS"));
+            Column column = new Column(false, columnName, low, up, rs.getString("TYPE_NAME"), rs.getString("REMARKS"),
+                    rs.getInt("COLUMN_SIZE"));
             columns.add(column);
+        }
+        ResultSet primaryKeys = dmd.getPrimaryKeys(table.getSchema(), table.getSchema(), table.getName());
+        while (primaryKeys.next()) {
+            String columnName = primaryKeys.getString("COLUMN_NAME");
+            columns.forEach(column -> {
+                if (column.getName().equals(columnName)) {
+                    column.setIsid(true);
+                }
+            });
         }
         table.setColumns(columns);
         rs.close();
