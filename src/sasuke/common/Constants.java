@@ -13,32 +13,39 @@ public class Constants {
             "password=123456\n" +
             "entity.pathPattern=.*module1.*\n" +
             "entity.packagePath=com/lu/entity";
-    private static final String ENTITY_TEMPLATE = "package ${packageName};\n" +
-            "\n" +
+    private static final String ENTITY_TEMPLATE = "<#assign keys = propertyMap?keys/>\n" +
+            "<#assign p1=\"\">\n" +
+            "<#if propertyMap.id??>\n" +
+            "    <#assign p1=\"implement Entity\">\n" +
+            "</#if>\n" +
+            "package ${packageName};\n" +
+            "/**\n" +
+            " * ${className} : ${remark}\n" +
+            " * @author ${user}\n" +
+            " * @version 1.0\n" +
+            " * @since ${.now}\n" +
+            " * ${schema} ${table}\n" +
+            " * ${p1}\n" +
+            " */\n" +
             "public class ${className}{\n" +
-            "<#list properties as pro>\n" +
-            "    /**\n" +
-            "     * ${pro.remark}\n" +
-            "     */\n" +
+            "<#list keys as key>\n" +
+            "<#assign pro = propertyMap[\"${key}\"]>\n" +
             "    private ${pro.type} ${pro.lowCamelName};\n" +
             "</#list>\n" +
             "\n" +
-            "<#list properties as pro>\n" +
+            "<#list keys as key>\n" +
+            "<#assign pro = propertyMap[\"${key}\"]>\n" +
             "    /**\n" +
-            "     * 获取${pro.remark}\n" +
-            "     * @return ${pro.remark}\n" +
+            "     * ${pro.remark}\n" +
             "     */\n" +
             "    public ${pro.type} get${pro.upCamelName}(){\n" +
-            "        return ${pro.lowCamelName};\n" +
+            "        return this.${pro.lowCamelName};\n" +
             "    }\n" +
             "    \n" +
-            "    /**\n" +
-            "     * 设置${pro.remark}\n" +
-            "     * @param ${pro.lowCamelName} ${pro.remark}\n" +
-            "     */\n" +
             "    public void set${pro.upCamelName}(${pro.type} ${pro.lowCamelName}){\n" +
             "        this.${pro.lowCamelName} = ${pro.lowCamelName};\n" +
             "    }\n" +
+            "    \n" +
             "</#list>\n" +
             "}";
 
@@ -51,8 +58,9 @@ public class Constants {
     }
 
     private static void initList() {
-        Template template = new Template(true, "entity", ENTITY_TEMPLATE, "java", "Entity");
-        TEMPLATE_LIST.add(template);
+        TEMPLATE_LIST.add(new Template(true, "entity", ENTITY_TEMPLATE, "java", "Entity"));
+        TEMPLATE_LIST.add(new Template(true, "mapper", "test", "xml", "Mapper"));
+        TEMPLATE_LIST.add(new Template(true, "service", "test", "java", "Service"));
     }
 
     private static void initMap() {

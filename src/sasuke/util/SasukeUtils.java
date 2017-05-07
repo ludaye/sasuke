@@ -19,6 +19,7 @@ import sasuke.common.Constants;
 
 import java.io.*;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class SasukeUtils {
@@ -103,6 +104,7 @@ public class SasukeUtils {
         String path = "";
         Configuration configuration = new Configuration();
         configuration.setDefaultEncoding("UTF-8");
+        configuration.clearTemplateCache();
         StringTemplateLoader loader = new StringTemplateLoader();
         templates.forEach(t -> loader.putTemplate(t.getName(), t.getContent()));
         HashBasedTable<String, String, TemplateProperty> templateTable = templateTable(templates, tables, projectModules);
@@ -137,11 +139,10 @@ public class SasukeUtils {
                     if (out != null) {
                         try {
                             out.close();
-                        } catch (IOException e1) {
-                            e1.printStackTrace();
+                        } catch (IOException ignored) {
                         }
                     }
-                    throw new RuntimeException(e.getMessage(), e);
+                    e.printStackTrace();
                 }
             }
         }
@@ -153,8 +154,8 @@ public class SasukeUtils {
         Map<String, Object> result = new HashMap<>();
         TemplateProperty property = templateTable.get(table.getName(), template.getName());
         Map<String, TemplateProperty> map = templateTable.rowMap().get(table.getName());
-        result.put("properties", ColumnToClassProperty(table.getColumns()));
-        result.put("templates", map);
+        result.put("propertyMap", ColumnToClassProperty(table.getColumns()));
+        result.put("templateMap", map);
         result.put("schema", table.getSchema());
         result.put("table", table.getName());
         if ("java".equals(template.getExtension())) {
@@ -223,7 +224,7 @@ public class SasukeUtils {
         return builder.toString();
     }
 
-    private static List<ClassProperty> ColumnToClassProperty(List<Column> columns) {
+    private static Map<String, ClassProperty> ColumnToClassProperty(List<Column> columns) {
         return columns.stream().map(column -> {
             ClassProperty property = new ClassProperty();
             property.setRemark(column.getRemark());
@@ -236,7 +237,7 @@ public class SasukeUtils {
             property.setType(fullNameType.substring(fullNameType.lastIndexOf(".") + 1, fullNameType.length()));
             property.setIsid(column.getIsid());
             return property;
-        }).collect(Collectors.toList());
+        }).collect(Collectors.toMap(ClassProperty::getLowCamelName, Function.identity()));
     }
 
     public static boolean isIgnoreModuleName(String templateName, Properties properties) {

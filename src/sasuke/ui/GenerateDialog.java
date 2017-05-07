@@ -1,6 +1,7 @@
 package sasuke.ui;
 
 import com.google.common.base.Strings;
+import com.intellij.openapi.progress.BackgroundTaskQueue;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.util.ui.AnimatedIcon;
@@ -153,11 +154,11 @@ public class GenerateDialog extends DialogWrapper {
                         willDoTable.add(table);
                     }
                 }
-//                BackgroundTaskQueue myQueue = new BackgroundTaskQueue(project, "my task");
-//                SasukeTask task = new SasukeTask(project, "Generate Tasks", false, willDoTemplate, willDoTable,
-//                        projectModules);
-//                myQueue.run(task);
-//                close(0);
+                BackgroundTaskQueue myQueue = new BackgroundTaskQueue(project, "my task");
+                SasukeTask task = new SasukeTask(project, "Generate Tasks", false, willDoTemplate, willDoTable,
+                        projectModules);
+                myQueue.run(task);
+                close(0);
             }
         });
         moduleName.getDocument().addDocumentListener(new MyDocumentListener(templateTableModel, moduleName, properties));
